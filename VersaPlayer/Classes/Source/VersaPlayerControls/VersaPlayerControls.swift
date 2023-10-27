@@ -6,6 +6,7 @@
 //  Copyright © 2018 Quasar. All rights reserved.
 //
 
+import Combine
 #if os(macOS)
 import Cocoa
 #else
@@ -25,7 +26,9 @@ open class VersaPlayerControls: View {
     
     /// VersaPlayerControlsBehaviour being used to validate ui
     public var behaviour: VersaPlayerControlsBehaviour!
-    
+
+	private var isMutedObserver: AnyCancellable?
+
     #if os(iOS)
     public var airplayButton: MPVolumeView? = nil
     #endif
@@ -58,7 +61,10 @@ open class VersaPlayerControls: View {
     
     /// VersaStatefulButton instance to represent the skip backward button
     @IBOutlet public weak var skipBackwardButton: VersaStatefulButton? = nil
-    
+
+	/// VersaStatefulButton instance to represent the mute button
+	@IBOutlet public weak var muteButton: VersaStatefulButton? = nil
+
     /// VersaSeekbarSlider instance to represent the seekbar slider
     @IBOutlet public weak var seekbarSlider: VersaSeekbarSlider? = nil
     
@@ -165,7 +171,10 @@ open class VersaPlayerControls: View {
         
         playPauseButton?.target = self
         playPauseButton?.action = #selector(togglePlayback(sender:))
-        
+
+		muteButton?.target = self
+		muteButton?.action = #selector(toggleMute(sender:))
+
         fullscreenButton?.target = self
         fullscreenButton?.action = #selector(toggleFullscreen(sender:))
         
@@ -188,7 +197,7 @@ open class VersaPlayerControls: View {
         #else
         
         playPauseButton?.addTarget(self, action: #selector(togglePlayback), for: .touchUpInside)
-        
+		muteButton?.addTarget(self, action: #selector(toggleMute), for: .touchUpInside)
         fullscreenButton?.addTarget(self, action: #selector(toggleFullscreen), for: .touchUpInside)
         
         rewindButton?.addTarget(self, action: #selector(rewindToggle), for: .touchUpInside)
@@ -290,6 +299,11 @@ open class VersaPlayerControls: View {
         guard let self = self else { return }
         self.checkOwnershipOf(object: notification.object, completion: self.showBuffering())
       }
+
+		isMutedObserver = handler.player.publisher(for: \.isMuted)
+			.sink(receiveValue: { [weak self] value in
+				self?.muteButton?.set(active: value)
+			})
     }
     
     /// Prepare the seekbar values
@@ -394,7 +408,13 @@ open class VersaPlayerControls: View {
             }
         }
     }
-    
+
+	/// Toggle mute
+	@IBAction open func toggleMute(sender: Any? = nil) {
+		handler.player.isMuted.toggle()
+		muteButton?.set(active: handler.player.isMuted)
+	}
+
     private func preparePlaybackButton(){
         if handler.isPlaying {
             playPauseButton?.set(active: true )
