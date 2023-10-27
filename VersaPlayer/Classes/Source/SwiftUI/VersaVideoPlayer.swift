@@ -70,17 +70,17 @@ public struct VersaVideoPlayer: UIViewRepresentable {
 }
 
 struct VersaVideoPlayer_Previews: PreviewProvider {
-	struct ListPreview: SwiftUI.View {
+	struct ListPreview: View {
 		@State private var video = VersaVideo(url: URL(string: "https://assets.afcdn.com/video49/20210722/v_645516.m3u8")!)
 
-		var body: some SwiftUI.View {
+		var body: some View {
 			VStack {
 				VersaVideoPlayer(for: $video) {
 					nextVideo()
 				}
 				.aspectRatio(1.78, contentMode: .fit)
 
-				SwiftUI.Button("Next Video") {
+				Button("Next Video") {
 					nextVideo()
 				}
 			}
@@ -91,7 +91,7 @@ struct VersaVideoPlayer_Previews: PreviewProvider {
 		}
 	}
 
-	static var previews: some SwiftUI.View {
+	static var previews: some View {
 		if let url = URL(string: "http://sample.vodobox.net/skate_phantom_flex_4k/skate_phantom_flex_4k.m3u8") {
 			VersaVideoPlayer(for: .constant(VersaVideo(url: url, isMuted: true))) {
 				print("video ended")

@@ -13,7 +13,7 @@ import UIKit
 #endif
 import AVKit
 
-open class VersaPlayerRenderingView: View {
+open class VersaPlayerRenderingView: PlatformView {
 
   #if os(iOS)
   override open class var layerClass: AnyClass {

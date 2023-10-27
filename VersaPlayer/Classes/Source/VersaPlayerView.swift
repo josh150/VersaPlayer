@@ -17,9 +17,9 @@ import AVKit
 
 
 #if os(macOS)
-public typealias View = NSView
+public typealias PlatformView = NSView
 #else
-public typealias View = UIView
+public typealias PlatformView = UIView
 #endif
 
 #if os(iOS)
@@ -28,8 +28,8 @@ public typealias PIPProtocol = AVPictureInPictureControllerDelegate
 public protocol PIPProtocol {}
 #endif
 
-open class VersaPlayerView: View, PIPProtocol {
-    
+open class VersaPlayerView: PlatformView, PIPProtocol {
+
     deinit {
         player.replaceCurrentItem(with: nil)
     }
@@ -53,8 +53,8 @@ open class VersaPlayerView: View, PIPProtocol {
     public weak var decryptionDelegate: VersaPlayerDecryptionDelegate? = nil
     
     /// VersaPlayer initial container
-    private weak var nonFullscreenContainer: View!
-    
+    private weak var nonFullscreenContainer: PlatformView!
+
     #if os(iOS)
     /// AVPictureInPictureController instance
     public var pipController: AVPictureInPictureController? = nil
@@ -168,7 +168,7 @@ open class VersaPlayerView: View, PIPProtocol {
     /// - Parameters:
     ///     - view: The view to layout.
     ///     - into: The container view.
-    open func layout(view: View, into: View? = nil) {
+    open func layout(view: PlatformView, into: PlatformView? = nil) {
         guard let into = into else {
             return
         }

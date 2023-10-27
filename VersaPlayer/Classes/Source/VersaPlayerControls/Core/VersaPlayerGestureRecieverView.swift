@@ -14,7 +14,7 @@ import UIKit
 
 #if os(macOS)
 
-open class VersaPlayerGestureRecieverView: View {
+open class VersaPlayerGestureRecieverView: PlatformView {
     
     /// VersaPlayerGestureRecieverViewDelegate instance
     public weak var delegate: VersaPlayerGestureRecieverViewDelegate? = nil

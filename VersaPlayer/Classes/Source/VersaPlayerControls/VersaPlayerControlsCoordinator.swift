@@ -14,7 +14,7 @@ import UIKit
 import CoreMedia
 import AVFoundation
 
-open class VersaPlayerControlsCoordinator: View, VersaPlayerGestureRecieverViewDelegate {
+open class VersaPlayerControlsCoordinator: PlatformView, VersaPlayerGestureRecieverViewDelegate {
 
     /// VersaPlayer instance being used
     weak var player: VersaPlayerView!

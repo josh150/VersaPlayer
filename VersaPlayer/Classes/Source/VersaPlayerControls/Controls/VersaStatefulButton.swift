@@ -13,13 +13,13 @@ import UIKit
 #endif
 
 #if os(macOS)
-public typealias Button = NSButton
+public typealias PlatformButton = NSButton
 #else
-public typealias Button = UIButton
+public typealias PlatformButton = UIButton
 #endif
 
 @IBDesignable
-open class VersaStatefulButton: Button {
+open class VersaStatefulButton: PlatformButton {
     
     #if os(macOS)
     open override var state: NSControl.StateValue {

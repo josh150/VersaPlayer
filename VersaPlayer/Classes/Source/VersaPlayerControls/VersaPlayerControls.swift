@@ -19,7 +19,7 @@ import AVKit
 import MediaPlayer
 #endif
 
-open class VersaPlayerControls: View {
+open class VersaPlayerControls: PlatformView {
     
     /// VersaPlayer intance being controlled
     public weak var handler: VersaPlayerView!
@@ -75,7 +75,7 @@ open class VersaPlayerControls: View {
     @IBOutlet public weak var totalTimeLabel: VersaTimeLabel? = nil
     
     /// UIView to be shown when buffering
-    @IBOutlet public weak var bufferingView: View? = nil
+    @IBOutlet public weak var bufferingView: PlatformView? = nil
     
     private var wasPlayingBeforeRewinding: Bool = false
     private var wasPlayingBeforeForwarding: Bool = false
