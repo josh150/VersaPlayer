@@ -105,7 +105,7 @@ extension VersaPlayer {
     /// Start time
     ///
     /// - Returns: Player's current item start time as CMTime
-    open func startTime() -> CMTime {
+	public func startTime() -> CMTime {
         guard let item = currentItem else {
             return CMTime(seconds: 0, preferredTimescale: CMTimeScale(NSEC_PER_SEC))
         }
@@ -120,7 +120,7 @@ extension VersaPlayer {
     /// End time
     ///
     /// - Returns: Player's current item end time as CMTime
-    open func endTime() -> CMTime {
+	public func endTime() -> CMTime {
         guard let item = currentItem else {
             return CMTime(seconds: 0, preferredTimescale: CMTimeScale(NSEC_PER_SEC))
         }
@@ -143,7 +143,7 @@ extension VersaPlayer {
         }
     }
     /// Prepare players playback delegate observers
-    open func preparePlayerPlaybackDelegate() {
+	public func preparePlayerPlaybackDelegate() {
      NotificationCenter.default.addObserver(self, selector: #selector(playerDidEnd), name: NSNotification.Name.AVPlayerItemDidPlayToEndTime, object: self.currentItem)
       NotificationCenter.default.addObserver(forName: NSNotification.Name.AVPlayerItemTimeJumped, object: self, queue: OperationQueue.main) { [weak self] (notification) in
         guard let self = self else { return }

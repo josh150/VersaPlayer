@@ -138,7 +138,7 @@ open class VersaPlayerView: View, PIPProtocol {
     ///
     /// - Parameters:
     ///     - ext: The instance of the extension.
-    ///     - name: The name of the extension.
+    ///     - name: The name of the extension.ke
     open func addExtension(extension ext: VersaPlayerExtension, with name: String) {
         ext.player = self
         ext.prepare()
