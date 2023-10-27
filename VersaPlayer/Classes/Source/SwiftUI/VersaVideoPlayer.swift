@@ -19,6 +19,13 @@ public struct VersaVideoPlayer: UIViewRepresentable {
 		view.use(controls: controls)
 		view.controls?.behaviour.shouldAutohide = true
 
+		video.remote.playAction = {
+			view.play()
+		}
+		video.remote.pauseAction = {
+			view.pause()
+		}
+
 		return view
 	}
 
@@ -80,8 +87,18 @@ struct VersaVideoPlayer_Previews: PreviewProvider {
 				}
 				.aspectRatio(1.78, contentMode: .fit)
 
-				Button("Next Video") {
-					nextVideo()
+				HStack {
+					Button("Play") {
+						video.remote.play()
+					}
+
+					Button("Pause") {
+						video.remote.pause()
+					}
+
+					Button("Next Video") {
+						nextVideo()
+					}
 				}
 			}
 		}
