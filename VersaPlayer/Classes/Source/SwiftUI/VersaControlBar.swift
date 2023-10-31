@@ -155,14 +155,14 @@ class VersaControlBar: UIView {
 		])
 	}
 
-	func wrappedWithPlayerControls() -> VersaPlayerControls {
+	func wrappedWithPlayerControls(offset: CGFloat) -> VersaPlayerControls {
 		let controls = VersaPlayerControls()
 		controls.addSubview(self)
 
 		NSLayoutConstraint.activate([
 			leadingAnchor.constraint(equalTo: controls.leadingAnchor, constant: 16),
 			trailingAnchor.constraint(equalTo: controls.trailingAnchor, constant: -16),
-			bottomAnchor.constraint(equalTo: controls.bottomAnchor, constant: -8),
+			bottomAnchor.constraint(equalTo: controls.bottomAnchor, constant: -offset),
 			heightAnchor.constraint(equalToConstant: height)
 		])
 

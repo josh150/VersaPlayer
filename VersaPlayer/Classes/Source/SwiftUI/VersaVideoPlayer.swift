@@ -3,10 +3,12 @@ import SwiftUI
 
 public struct VersaVideoPlayer: UIViewRepresentable {
 	@Binding private var video: VersaVideo
+	private let controlsOffset: CGFloat
 	private let onVideoEnd: () -> Void
 
-	public init(for video: Binding<VersaVideo>, onVideoEnd: @escaping () -> Void = {}) {
+	public init(for video: Binding<VersaVideo>, controlsOffset: CGFloat = 8, onVideoEnd: @escaping () -> Void = {}) {
 		self._video = video
+		self.controlsOffset = controlsOffset
 		self.onVideoEnd = onVideoEnd
 	}
 
@@ -31,7 +33,7 @@ public struct VersaVideoPlayer: UIViewRepresentable {
 
 	private func makeControls() -> VersaPlayerControls {
 		let controlBar = VersaControlBar()
-		return controlBar.wrappedWithPlayerControls()
+		return controlBar.wrappedWithPlayerControls(offset: controlsOffset)
 	}
 
 	public func makeCoordinator() -> Coordinator {
@@ -110,10 +112,9 @@ struct VersaVideoPlayer_Previews: PreviewProvider {
 
 	static var previews: some View {
 		if let url = URL(string: "http://sample.vodobox.net/skate_phantom_flex_4k/skate_phantom_flex_4k.m3u8") {
-			VersaVideoPlayer(for: .constant(VersaVideo(url: url, isMuted: true))) {
+			VersaVideoPlayer(for: .constant(VersaVideo(url: url, isMuted: true)), controlsOffset: 60) {
 				print("video ended")
 			}
-			.aspectRatio(1.78, contentMode: .fit)
 		}
 
 		ListPreview()
