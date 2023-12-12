@@ -16,6 +16,10 @@ public struct VersaVideoPlayer: UIViewRepresentable {
 		let view = VersaPlayerView()
 		view.layer.backgroundColor = UIColor.black.cgColor
 		view.playbackDelegate = context.coordinator
+		
+		if video.resizeFill {
+			view.renderingView.playerLayer.videoGravity = .resizeAspectFill
+		}
 
 		let controls = makeControls()
 		view.use(controls: controls)
@@ -112,7 +116,7 @@ struct VersaVideoPlayer_Previews: PreviewProvider {
 
 	static var previews: some View {
 		if let url = URL(string: "http://sample.vodobox.net/skate_phantom_flex_4k/skate_phantom_flex_4k.m3u8") {
-			VersaVideoPlayer(for: .constant(VersaVideo(url: url, isMuted: true)), controlsOffset: 60) {
+			VersaVideoPlayer(for: .constant(VersaVideo(url: url, isMuted: true, resizeFill: true)), controlsOffset: 60) {
 				print("video ended")
 			}
 		}
