@@ -3,12 +3,19 @@ import SwiftUI
 
 public struct VersaVideoPlayer: UIViewRepresentable {
 	@Binding private var video: VersaVideo
-	private let controlsOffset: CGFloat
+	private let controlsConfig: ControlsConfig
+	private let onSkip: (Int) -> Void
 	private let onVideoEnd: () -> Void
 
-	public init(for video: Binding<VersaVideo>, controlsOffset: CGFloat = 8, onVideoEnd: @escaping () -> Void = {}) {
+	public init(
+		for video: Binding<VersaVideo>,
+		controlsConfig: ControlsConfig = .default,
+		onSkip: @escaping (Int) -> Void = { _ in },
+		onVideoEnd: @escaping () -> Void = {}
+	) {
 		self._video = video
-		self.controlsOffset = controlsOffset
+		self.controlsConfig = controlsConfig
+		self.onSkip = onSkip
 		self.onVideoEnd = onVideoEnd
 	}
 
@@ -23,7 +30,7 @@ public struct VersaVideoPlayer: UIViewRepresentable {
 
 		let controls = makeControls()
 		view.use(controls: controls)
-		view.controls?.behaviour.shouldAutohide = true
+		view.controls?.behaviour.shouldAutohide = controlsConfig.shouldAutoHide
 
 		video.remote.playAction = {
 			view.play()
@@ -36,8 +43,15 @@ public struct VersaVideoPlayer: UIViewRepresentable {
 	}
 
 	private func makeControls() -> VersaPlayerControls {
-		let controlBar = VersaControlBar()
-		return controlBar.wrappedWithPlayerControls(offset: controlsOffset)
+		switch controlsConfig.type {
+		case .full:
+			let controlBar = VersaControlBar()
+			return controlBar.wrappedWithPlayerControls(offset: controlsConfig.offset)
+
+		case .minimal:
+			let controlBar = VersaControlBarMin(onSkip: onSkip)
+			return controlBar.wrappedWithPlayerControls(offset: controlsConfig.offset)
+		}
 	}
 
 	public func makeCoordinator() -> Coordinator {
@@ -52,11 +66,15 @@ public struct VersaVideoPlayer: UIViewRepresentable {
 		}
 
 		if newVideo {
-			uiView.set(item: VersaPlayerItem(url: video.url))
-			if video.autoPlay {
-				uiView.play()
+			if let url = video.url {
+				uiView.set(item: VersaPlayerItem(url: url))
+				if video.autoPlay {
+					uiView.play()
+				} else {
+					uiView.pause()
+				}
 			} else {
-				uiView.pause()
+				uiView.set(item: nil)
 			}
 		}
 
@@ -84,13 +102,24 @@ public struct VersaVideoPlayer: UIViewRepresentable {
 
 struct VersaVideoPlayer_Previews: PreviewProvider {
 	struct ListPreview: View {
-		@State private var video = VersaVideo(url: URL(string: "https://assets.afcdn.com/video49/20210722/v_645516.m3u8")!)
+		@State private var video = VersaVideo(url: nil)
+		@State private var currentIndex: Int = 0
+
+		private let videos = [
+			URL(string: "https://assets.afcdn.com/video49/20210722/v_645516.m3u8")!,
+			URL(string: "http://sample.vodobox.net/skate_phantom_flex_4k/skate_phantom_flex_4k.m3u8")!
+		]
 
 		var body: some View {
 			VStack {
-				VersaVideoPlayer(for: $video) {
-					nextVideo()
-				}
+				VersaVideoPlayer(
+					for: $video,
+					controlsConfig: ControlsConfig(type: .minimal),
+					onSkip: onSkip,
+					onVideoEnd: {
+						onSkip(delta: 1)
+					}
+				)
 				.aspectRatio(1.78, contentMode: .fit)
 
 				HStack {
@@ -103,22 +132,36 @@ struct VersaVideoPlayer_Previews: PreviewProvider {
 					}
 
 					Button("Next Video") {
-						nextVideo()
+						onSkip(delta: 1)
+					}
+
+					Button("Unload") {
+						video.url = nil
 					}
 				}
 			}
+			.onAppear {
+				video.url = videos[currentIndex]
+			}
 		}
 
-		private func nextVideo() {
-			video.url = URL(string: "http://sample.vodobox.net/skate_phantom_flex_4k/skate_phantom_flex_4k.m3u8")!
+		private func onSkip(delta: Int) {
+			let nextIndex = currentIndex + delta
+			guard nextIndex >= 0 && nextIndex < videos.count else { return }
+			currentIndex = nextIndex
+			video.url = videos[currentIndex]
 		}
 	}
 
 	static var previews: some View {
 		if let url = URL(string: "http://sample.vodobox.net/skate_phantom_flex_4k/skate_phantom_flex_4k.m3u8") {
-			VersaVideoPlayer(for: .constant(VersaVideo(url: url, isMuted: true, resizeFill: true)), controlsOffset: 60) {
-				print("video ended")
-			}
+			VersaVideoPlayer(
+				for: .constant(VersaVideo(url: url, isMuted: true, resizeFill: true)),
+				controlsConfig: ControlsConfig(type: .full, offset: 60),
+				onVideoEnd: {
+					print("video ended")
+				}
+			)
 		}
 
 		ListPreview()
