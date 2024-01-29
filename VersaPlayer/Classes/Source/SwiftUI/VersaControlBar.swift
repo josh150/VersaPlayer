@@ -128,8 +128,8 @@ class VersaControlBar: UIView {
 
 	private func buildMuteButton() {
 		muteButton.translatesAutoresizingMaskIntoConstraints = false
-		muteButton.activeImage = UIImage(systemName: "speaker.fill")
-		muteButton.inactiveImage = UIImage(systemName: "speaker.slash.fill")
+		muteButton.activeImage = UIImage(systemName: "speaker.slash.fill")
+		muteButton.inactiveImage = UIImage(systemName: "speaker.fill")
 		muteButton.tintColor = .white
 		addSubview(muteButton)
 
