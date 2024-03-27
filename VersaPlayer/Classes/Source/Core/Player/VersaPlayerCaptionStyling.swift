@@ -10,7 +10,7 @@ import AVFoundation
 
 public class VersaPlayerCaptionStyling {
     
-    weak var player: VersaPlayer!
+    weak var player: VersaPlayer?
     var rules: [AVTextStyleRule] = []
     
     init(with player: VersaPlayer) {
@@ -27,18 +27,18 @@ public class VersaPlayerCaptionStyling {
             return
         }
         rules.append(style)
-        player.currentItem?.textStyleRules = rules
+        player?.currentItem?.textStyleRules = rules
     }
     
     /// Remove all previously set attribute
     public func clearAttributes() {
         rules = []
-        player.currentItem?.textStyleRules = rules
+        player?.currentItem?.textStyleRules = rules
     }
     
     /// Remove any previously set attribute
     public func remove(attribute: CFString) {
-        player.currentItem?.textStyleRules?.removeAll(where: { (rule) -> Bool in
+        player?.currentItem?.textStyleRules?.removeAll(where: { (rule) -> Bool in
             return rule.textMarkupAttributes.contains(where: { (key, value) -> Bool in
                 return key == attribute as String
             })

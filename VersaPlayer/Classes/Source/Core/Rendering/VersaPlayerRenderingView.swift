@@ -29,9 +29,6 @@ open class VersaPlayerRenderingView: PlatformView {
     #endif
   }()
 
-  /// VersaPlayer instance being rendered by renderingLayer
-  public weak var player: VersaPlayerView!
-
   deinit {
     
   }

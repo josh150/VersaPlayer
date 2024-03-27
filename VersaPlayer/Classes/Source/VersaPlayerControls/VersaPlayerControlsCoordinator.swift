@@ -17,11 +17,11 @@ import AVFoundation
 open class VersaPlayerControlsCoordinator: PlatformView, VersaPlayerGestureRecieverViewDelegate {
 
     /// VersaPlayer instance being used
-    weak var player: VersaPlayerView!
-    
+    weak var player: VersaPlayerView?
+
     /// VersaPlayerControls instance being used
-    weak public var controls: VersaPlayerControls!
-    
+    weak public var controls: VersaPlayerControls?
+
     /// VersaPlayerGestureRecieverView instance being used
     public var gestureReciever: VersaPlayerGestureRecieverView!
 
@@ -56,7 +56,7 @@ open class VersaPlayerControlsCoordinator: PlatformView, VersaPlayerGestureRecie
     #endif
     
     public func configureView() {
-        if controls != nil {
+        if let controls {
             addSubview(controls)
         }
         if gestureReciever == nil {
@@ -95,6 +95,7 @@ open class VersaPlayerControlsCoordinator: PlatformView, VersaPlayerGestureRecie
     /// - Parameters:
     ///     - point: CGPoint at which tap was recognized
     open func didTap(at point: CGPoint) {
+		guard let controls else { return }
         if controls.behaviour.showingControls {
             controls.behaviour.hide()
         } else {
@@ -107,6 +108,7 @@ open class VersaPlayerControlsCoordinator: PlatformView, VersaPlayerGestureRecie
     /// - Parameters:
     ///     - point: CGPoint at which tap was recognized
     open func didDoubleTap(at point: CGPoint) {
+		guard let player else { return }
         if player.renderingView.playerLayer.videoGravity == AVLayerVideoGravity.resizeAspect {
             player.renderingView.playerLayer.videoGravity = AVLayerVideoGravity.resizeAspectFill
         } else {

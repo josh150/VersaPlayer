@@ -22,8 +22,8 @@ import MediaPlayer
 open class VersaPlayerControls: PlatformView {
     
     /// VersaPlayer intance being controlled
-    public weak var handler: VersaPlayerView!
-    
+    public weak var handler: VersaPlayerView?
+
     /// VersaPlayerControlsBehaviour being used to validate ui
     public var behaviour: VersaPlayerControlsBehaviour!
 
@@ -34,7 +34,7 @@ open class VersaPlayerControls: PlatformView {
     #endif
     
     /// VersaPlayerControlsCoordinator instance
-    public weak var controlsCoordinator: VersaPlayerControlsCoordinator!
+    public weak var controlsCoordinator: VersaPlayerControlsCoordinator?
     
     /// VersaStatefulButton instance to represent the play/pause button
     @IBOutlet public weak var playPauseButton: VersaStatefulButton? = nil
@@ -90,6 +90,10 @@ open class VersaPlayerControls: PlatformView {
         NotificationCenter.default.removeObserver(self, name: VersaPlayer.VPlayerNotificationName.pause.notification, object: nil)
         NotificationCenter.default.removeObserver(self, name: VersaPlayer.VPlayerNotificationName.buffering.notification, object: nil)
         NotificationCenter.default.removeObserver(self, name: VersaPlayer.VPlayerNotificationName.endBuffering.notification, object: nil)
+		NotificationCenter.default.removeObserver(self, name: VersaPlayer.VPlayerNotificationName.didEnd.notification, object: nil)
+
+		isMutedObserver?.cancel()
+		isMutedObserver = nil
     }
     
     #if os(macOS)
@@ -131,6 +135,7 @@ open class VersaPlayerControls: PlatformView {
     /// - Parameters:
     ///     - time: CMTime representation of the current playback time
     open func timeDidChange(toTime time: CMTime) {
+		guard let handler else { return }
         currentTimeLabel?.update(toTime: time.seconds)
         totalTimeLabel?.update(toTime: handler.player.endTime().seconds)
         setSeekbarSlider(start: handler.player.startTime().seconds, end: handler.player.endTime().seconds, at: time.seconds)
@@ -160,7 +165,7 @@ open class VersaPlayerControls: PlatformView {
     
     /// Remove coordinator from player
     open func removeFromPlayer() {
-        controlsCoordinator.removeFromSuperview()
+        controlsCoordinator?.removeFromSuperview()
     }
     
     /// Prepare controls targets and notification listeners
@@ -273,34 +278,39 @@ open class VersaPlayerControls: PlatformView {
 
     /// Prepares the notification observers/listeners
     open func prepareNotificationListener() {
-      NotificationCenter.default.addObserver(forName: VersaPlayer.VPlayerNotificationName.timeChanged.notification, object: nil, queue: OperationQueue.main) { [weak self] (notification) in
-        guard let self = self else { return }
-        if let time = notification.userInfo?[VersaPlayer.VPlayerNotificationInfoKey.time.rawValue] as? CMTime {
-          self.checkOwnershipOf(object: notification.object, completion: self.timeDidChange(toTime: time))
-        }
-      }
-      NotificationCenter.default.addObserver(forName: VersaPlayer.VPlayerNotificationName.didEnd.notification, object: nil, queue: OperationQueue.main) { [weak self] (notification) in
-        guard let self = self else { return }
-        self.checkOwnershipOf(object: notification.object, completion: self.playPauseButton?.set(active: false))
-      }
-      NotificationCenter.default.addObserver(forName: VersaPlayer.VPlayerNotificationName.play.notification, object: nil, queue: OperationQueue.main) { [weak self]  (notification) in
-        guard let self = self else { return }
-        self.checkOwnershipOf(object: notification.object, completion: self.playPauseButton?.set(active: true))
-      }
-      NotificationCenter.default.addObserver(forName: VersaPlayer.VPlayerNotificationName.pause.notification, object: nil, queue: OperationQueue.main) {[weak self] (notification) in
-        guard let self = self else { return }
-        self.checkOwnershipOf(object: notification.object, completion: self.playPauseButton?.set(active: false))
-      }
-      NotificationCenter.default.addObserver(forName: VersaPlayer.VPlayerNotificationName.endBuffering.notification, object: nil, queue: OperationQueue.main) {[weak self] (notification) in
-        guard let self = self else { return }
-        self.checkOwnershipOf(object: notification.object, completion: self.hideBuffering())
-      }
-      NotificationCenter.default.addObserver(forName: VersaPlayer.VPlayerNotificationName.buffering.notification, object: nil, queue: OperationQueue.main) {[weak self] (notification) in
-        guard let self = self else { return }
-        self.checkOwnershipOf(object: notification.object, completion: self.showBuffering())
-      }
+		NotificationCenter.default.addObserver(forName: VersaPlayer.VPlayerNotificationName.timeChanged.notification, object: nil, queue: OperationQueue.main) { [weak self] (notification) in
+			guard let self = self else { return }
+			if let time = notification.userInfo?[VersaPlayer.VPlayerNotificationInfoKey.time.rawValue] as? CMTime {
+			  self.checkOwnershipOf(object: notification.object, completion: self.timeDidChange(toTime: time))
+			}
+		}
 
-		isMutedObserver = handler.player.publisher(for: \.isMuted)
+		NotificationCenter.default.addObserver(forName: VersaPlayer.VPlayerNotificationName.didEnd.notification, object: nil, queue: OperationQueue.main) { [weak self] (notification) in
+			guard let self = self else { return }
+			self.checkOwnershipOf(object: notification.object, completion: self.playPauseButton?.set(active: false))
+		}
+
+		NotificationCenter.default.addObserver(forName: VersaPlayer.VPlayerNotificationName.play.notification, object: nil, queue: OperationQueue.main) { [weak self]  (notification) in
+			guard let self = self else { return }
+			self.checkOwnershipOf(object: notification.object, completion: self.playPauseButton?.set(active: true))
+		}
+
+		NotificationCenter.default.addObserver(forName: VersaPlayer.VPlayerNotificationName.pause.notification, object: nil, queue: OperationQueue.main) {[weak self] (notification) in
+			guard let self = self else { return }
+			self.checkOwnershipOf(object: notification.object, completion: self.playPauseButton?.set(active: false))
+		}
+
+		NotificationCenter.default.addObserver(forName: VersaPlayer.VPlayerNotificationName.endBuffering.notification, object: nil, queue: OperationQueue.main) {[weak self] (notification) in
+			guard let self = self else { return }
+			self.checkOwnershipOf(object: notification.object, completion: self.hideBuffering())
+		}
+
+		NotificationCenter.default.addObserver(forName: VersaPlayer.VPlayerNotificationName.buffering.notification, object: nil, queue: OperationQueue.main) {[weak self] (notification) in
+			guard let self = self else { return }
+			self.checkOwnershipOf(object: notification.object, completion: self.showBuffering())
+		}
+
+		isMutedObserver = handler?.player.publisher(for: \.isMuted)
 			.sink(receiveValue: { [weak self] value in
 				self?.muteButton?.set(active: value)
 			})
@@ -308,6 +318,7 @@ open class VersaPlayerControls: PlatformView {
     
     /// Prepare the seekbar values
     open func prepareSeekbar() {
+		guard let handler else { return }
         setSeekbarSlider(start: handler.player.startTime().seconds, end: handler.player.endTime().seconds, at: handler.player.currentTime().seconds)
     }
     
@@ -323,18 +334,21 @@ open class VersaPlayerControls: PlatformView {
     
     /// Skip forward (n) seconds in time
     @IBAction open func skipForward(sender: Any? = nil) {
+		guard let handler else { return }
         let time = handler.player.currentTime() + CMTime(seconds: skipSize, preferredTimescale: CMTimeScale(NSEC_PER_SEC))
         handler.player.seek(to: time)
     }
     
     /// Skip backward (n) seconds in time
     @IBAction open func skipBackward(sender: Any? = nil) {
+		guard let handler else { return }
         let time = handler.player.currentTime() - CMTime(seconds: skipSize, preferredTimescale: CMTimeScale(NSEC_PER_SEC))
         handler.player.seek(to: time)
     }
     
     /// End seeking
     @IBAction open func seekingEnd(sender: Any? = nil) {
+		guard let handler else { return }
         handler.isSeeking = false
         if wasPlayingBeforeSeeking {
             handler.play()
@@ -343,6 +357,7 @@ open class VersaPlayerControls: PlatformView {
     
     /// Start Seeking
     @IBAction open func seekingStart(sender: Any? = nil) {
+		guard let handler else { return }
         wasPlayingBeforeSeeking = handler.isPlaying
         handler.isSeeking = true
         handler.pause()
@@ -356,6 +371,7 @@ open class VersaPlayerControls: PlatformView {
     /// - Parameters:
     ///     - sender: NSSlider that updated
     @IBAction open func playheadChanged(with sender: NSSlider) {
+		guard let handler else { return }
         handler.pause()
         handler.isSeeking = true
         let value = sender.doubleValue
@@ -371,15 +387,16 @@ open class VersaPlayerControls: PlatformView {
     /// - Parameters:
     ///     - sender: UISlider that updated
     @IBAction open func playheadChanged(with sender: UISlider) {
-        handler.isSeeking = true
+        handler?.isSeeking = true
         let value = Double(sender.value)
         let time = CMTime(seconds: value, preferredTimescale: CMTimeScale(NSEC_PER_SEC))
-        handler.player.seek(to: time)
+        handler?.player.seek(to: time)
         behaviour.update(with: time.seconds)
     }
     
     /// Toggle PIP mode
     @IBAction open func togglePip() {
+		guard let handler else { return }
         handler.setNativePip(enabled: !handler.isPipModeEnabled)
     }
     
@@ -387,12 +404,14 @@ open class VersaPlayerControls: PlatformView {
     
     /// Toggle fullscreen mode
     @IBAction open func toggleFullscreen(sender: Any? = nil) {
+		guard let handler else { return }
         fullscreenButton?.set(active: !handler.isFullscreenModeEnabled)
         handler.setFullscreen(enabled: !handler.isFullscreenModeEnabled)
     }
     
     /// Toggle playback
     @IBAction open func togglePlayback(sender: Any? = nil) {
+		guard let handler else { return }
         if handler.isRewinding || handler.isForwarding {
             handler.player.rate = 1
             playPauseButton?.set(active: true)
@@ -411,11 +430,13 @@ open class VersaPlayerControls: PlatformView {
 
 	/// Toggle mute
 	@IBAction open func toggleMute(sender: Any? = nil) {
+		guard let handler else { return }
 		handler.player.isMuted.toggle()
 		muteButton?.set(active: handler.player.isMuted)
 	}
 
     private func preparePlaybackButton(){
+		guard let handler else { return }
         if handler.isPlaying {
             playPauseButton?.set(active: true )
         } else {
@@ -425,48 +446,50 @@ open class VersaPlayerControls: PlatformView {
     
     /// Toggle rewind
     @IBAction open func rewindToggle(sender: Any? = nil) {
-        if handler.player.currentItem?.canPlayFastReverse ?? false {
-            if handler.isRewinding {
-                rewindButton?.set(active: false)
-                handler.player.rate = 1
-                if wasPlayingBeforeRewinding {
-                    handler.play()
-                } else {
-                    handler.pause()
-                }
-            } else {
-                playPauseButton?.set(active: false)
-                rewindButton?.set(active: true)
-                wasPlayingBeforeRewinding = handler.isPlaying
-                if !handler.isPlaying {
-                    handler.play()
-                }
-                handler.player.rate = -1
-            }
-        }
+		guard let handler else { return }
+		guard handler.player.currentItem?.canPlayFastReverse == true else { return }
+
+		if handler.isRewinding {
+			rewindButton?.set(active: false)
+			handler.player.rate = 1
+			if wasPlayingBeforeRewinding {
+				handler.play()
+			} else {
+				handler.pause()
+			}
+		} else {
+			playPauseButton?.set(active: false)
+			rewindButton?.set(active: true)
+			wasPlayingBeforeRewinding = handler.isPlaying
+			if !handler.isPlaying {
+				handler.play()
+			}
+			handler.player.rate = -1
+		}
     }
     
     /// Forward toggle
     @IBAction open func forwardToggle(sender: Any? = nil) {
-        if handler.player.currentItem?.canPlayFastForward ?? false {
-            if handler.isForwarding {
-                forwardButton?.set(active: false)
-                handler.player.rate = 1
-                if wasPlayingBeforeForwarding {
-                    handler.play()
-                } else {
-                    handler.pause()
-                }
-            } else {
-                playPauseButton?.set(active: false)
-                forwardButton?.set(active: true)
-                wasPlayingBeforeForwarding = handler.isPlaying
-                if !handler.isPlaying {
-                    handler.play()
-                }
-                handler.player.rate = 2
-            }
-        }
+		guard let handler else { return }
+		guard handler.player.currentItem?.canPlayFastForward == true else { return }
+
+		if handler.isForwarding {
+			forwardButton?.set(active: false)
+			handler.player.rate = 1
+			if wasPlayingBeforeForwarding {
+				handler.play()
+			} else {
+				handler.pause()
+			}
+		} else {
+			playPauseButton?.set(active: false)
+			forwardButton?.set(active: true)
+			wasPlayingBeforeForwarding = handler.isPlaying
+			if !handler.isPlaying {
+				handler.play()
+			}
+			handler.player.rate = 2
+		}
     }
 
 }

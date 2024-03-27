@@ -53,7 +53,7 @@ open class VersaPlayerView: PlatformView, PIPProtocol {
     public weak var decryptionDelegate: VersaPlayerDecryptionDelegate? = nil
     
     /// VersaPlayer initial container
-    private weak var nonFullscreenContainer: PlatformView!
+    private weak var nonFullscreenContainer: PlatformView?
 
     #if os(iOS)
     /// AVPictureInPictureController instance
@@ -186,8 +186,8 @@ open class VersaPlayerView: PlatformView, PIPProtocol {
     /// - Parameters:
     ///     - enabled: Whether or not to enable
     open func setNativePip(enabled: Bool) {
-        if pipController == nil && renderingView != nil {
-            let controller = AVPictureInPictureController(playerLayer: renderingView!.playerLayer)
+        if pipController == nil, let renderingView {
+            let controller = AVPictureInPictureController(playerLayer: renderingView.playerLayer)
             controller?.delegate = self
             pipController = controller
         }
@@ -283,11 +283,11 @@ open class VersaPlayerView: PlatformView, PIPProtocol {
     
     open func pictureInPictureControllerWillStopPictureInPicture(_ pictureInPictureController: AVPictureInPictureController) {
         isPipModeEnabled = false
-        controls?.controlsCoordinator.isHidden = false
+        controls?.controlsCoordinator?.isHidden = false
     }
     
     open func pictureInPictureControllerWillStartPictureInPicture(_ pictureInPictureController: AVPictureInPictureController) {
-        controls?.controlsCoordinator.isHidden = true
+        controls?.controlsCoordinator?.isHidden = true
         isPipModeEnabled = true
     }
     

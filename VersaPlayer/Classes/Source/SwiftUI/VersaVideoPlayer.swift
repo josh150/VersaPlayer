@@ -23,7 +23,7 @@ public struct VersaVideoPlayer: UIViewRepresentable {
 		let view = VersaPlayerView()
 		view.layer.backgroundColor = UIColor.black.cgColor
 		view.playbackDelegate = context.coordinator
-		
+
 		if video.resizeFill {
 			view.renderingView.playerLayer.videoGravity = .resizeAspectFill
 		}
@@ -32,11 +32,11 @@ public struct VersaVideoPlayer: UIViewRepresentable {
 		view.use(controls: controls)
 		view.controls?.behaviour.shouldAutohide = controlsConfig.shouldAutoHide
 
-		video.remote.playAction = {
-			view.play()
+		video.remote.playAction = { [weak view] in
+			view?.play()
 		}
-		video.remote.pauseAction = {
-			view.pause()
+		video.remote.pauseAction = { [weak view] in
+			view?.pause()
 		}
 
 		return view
