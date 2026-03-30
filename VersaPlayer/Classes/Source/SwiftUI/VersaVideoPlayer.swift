@@ -6,17 +6,20 @@ public struct VersaVideoPlayer: UIViewRepresentable {
 	private let controlsConfig: ControlsConfig
 	private let onSkip: (Int) -> Void
 	private let onVideoEnd: () -> Void
-
+	private let onFullscreenToggle: (Bool) -> Void
+	
 	public init(
 		for video: Binding<VersaVideo>,
 		controlsConfig: ControlsConfig = .default,
 		onSkip: @escaping (Int) -> Void = { _ in },
-		onVideoEnd: @escaping () -> Void = {}
+		onVideoEnd: @escaping () -> Void = {},
+		onFullscreenToggle: @escaping (Bool) -> Void = { _ in }
 	) {
 		self._video = video
 		self.controlsConfig = controlsConfig
 		self.onSkip = onSkip
 		self.onVideoEnd = onVideoEnd
+		self.onFullscreenToggle = onFullscreenToggle
 	}
 
 	public func makeUIView(context: Context) -> VersaPlayerView {
@@ -55,7 +58,7 @@ public struct VersaVideoPlayer: UIViewRepresentable {
 	}
 
 	public func makeCoordinator() -> Coordinator {
-		Coordinator(onVideoEnd: onVideoEnd)
+		Coordinator(onVideoEnd: onVideoEnd, onFullscreenToggle: onFullscreenToggle)
 	}
 
 	public func updateUIView(_ uiView: VersaPlayerView, context: Context) {
@@ -89,13 +92,19 @@ public struct VersaVideoPlayer: UIViewRepresentable {
 
 	public class Coordinator: NSObject, VersaPlayerPlaybackDelegate {
 		private let onVideoEnd: () -> Void
-
-		init(onVideoEnd: @escaping () -> Void) {
+		private let onFullscreenToggle: (Bool) -> Void
+		
+		init(onVideoEnd: @escaping () -> Void, onFullscreenToggle: @escaping (Bool) -> Void) {
 			self.onVideoEnd = onVideoEnd
+			self.onFullscreenToggle = onFullscreenToggle
 		}
 
 		public func playbackDidEnd(player: VersaPlayer) {
 			onVideoEnd()
+		}
+		
+		public func fullscreenToggled(player: VersaPlayer, isFullscreen: Bool) {
+			onFullscreenToggle(isFullscreen)
 		}
 	}
 }
@@ -154,12 +163,15 @@ struct VersaVideoPlayer_Previews: PreviewProvider {
 	}
 
 	static var previews: some View {
-		if let url = URL(string: "http://sample.vodobox.net/skate_phantom_flex_4k/skate_phantom_flex_4k.m3u8") {
+		if let url = URL(string: "https://assets.afcdn.com/video49/20210722/v_645516.m3u8") {
 			VersaVideoPlayer(
 				for: .constant(VersaVideo(url: url, isMuted: true, resizeFill: true)),
 				controlsConfig: ControlsConfig(type: .full, offset: 60),
 				onVideoEnd: {
 					print("video ended")
+				},
+				onFullscreenToggle: {
+					print("Fullscreen \($0)")
 				}
 			)
 		}

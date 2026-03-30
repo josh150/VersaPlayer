@@ -226,7 +226,9 @@ open class VersaPlayerView: PlatformView, PIPProtocol {
             removeFromSuperview()
             layout(view: self, into: nonFullscreenContainer)
         }
-        
+		
+		playbackDelegate?.fullscreenToggled(player: player, isFullscreen: enabled)
+		
         isFullscreenModeEnabled = enabled
     }
     

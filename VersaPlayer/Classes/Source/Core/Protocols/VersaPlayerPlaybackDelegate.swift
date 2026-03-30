@@ -92,6 +92,13 @@ public protocol VersaPlayerPlaybackDelegate: AnyObject {
     ///     - player: VersaPlayer being used
     ///     - item: VersaPlayerItem being used
     func playbackItemReady(player: VersaPlayer, item: VersaPlayerItem?)
+	
+	/// Notifies when the view is changing fullscreen state
+	///
+	/// - Parameters:
+	///     - player: VersaPlayer being used
+	///     - isFullscreen: True when entering fullscreen, false when exiting
+	func fullscreenToggled(player: VersaPlayer, isFullscreen: Bool)
     
 }
 
@@ -124,4 +131,6 @@ public extension VersaPlayerPlaybackDelegate {
     func playbackDidPause(player: VersaPlayer) { }
 
     func playbackItemReady(player: VersaPlayer, item: VersaPlayerItem?) { }
+	
+	func fullscreenToggled(player: VersaPlayer, isFullscreen: Bool) { }
 }
